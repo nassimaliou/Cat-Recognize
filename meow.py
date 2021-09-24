@@ -122,5 +122,27 @@ def optimize(w, b, X, Y, num_iterations=100, learning_rate=0.009, print_cost=Fal
     
     return params, grads, costs
 
+#with the optimization done, we can now use w and b with a 70% degree of certainty with the predict function
+#predict Calculates  𝐴 = 𝜎(𝑤𝑇𝑋 + 𝑏), where 𝜎 is the sigmoid function
+#Converts the entries of A into 0 (if activation <= 0.5) or 1 (if activation > 0.5), stores the predictions in a vector Y_prediction
+
+def predict(w, b, X):
+    
+    m = X.shape[1]
+    Y_prediction = np.zeros((1, m))
+    w = w.reshape(X.shape[0], 1)
+    
+    A = sigmoid(np.dot(w.T, X) + b)
+
+    for i in range(A.shape[1]):
+
+        if A[0, i] > 0.5 :
+            Y_prediction[0,i] = 1
+        else:
+            Y_prediction[0,i] = 0
+
+    
+    return Y_prediction
+
 
 
