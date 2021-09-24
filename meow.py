@@ -83,3 +83,44 @@ def propagate(w, b, X, Y):
     db = 1/m * np.sum(A - Y)
 
     return {"dw": dw,"db": db}, np.squeeze(np.array(cost))
+
+
+#optimization function, This function optimizes w and b by running a gradient descent algorithm
+#The goal is to learn  𝑤 and 𝑏 by minimizing the cost function  𝐽
+#learning rules :
+#                   w = w − 𝛼*𝑑w
+#                   b = b − 𝛼*𝑑b
+#where 𝛼 (alpha) is the learning rate
+
+def optimize(w, b, X, Y, num_iterations=100, learning_rate=0.009, print_cost=False):
+    
+    w = copy.deepcopy(w)
+    b = copy.deepcopy(b)
+    
+    costs = []
+    
+    for i in range(num_iterations):
+        
+        grads, cost = propagate(w, b, X, Y) 
+       
+        dw = grads["dw"]
+        db = grads["db"]
+        
+        w -= learning_rate*dw
+        b -= learning_rate*db
+       
+        if i % 100 == 0:
+            costs.append(cost)
+        
+            if print_cost:
+                print ("Cost after iteration %i: %f" %(i, cost))
+    
+    params = {"w": w,
+              "b": b}
+    
+    grads = {"dw": dw, "db": db}
+    
+    return params, grads, costs
+
+
+
