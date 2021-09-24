@@ -1,3 +1,8 @@
+"""
+    ALIOUSALAH Mohamed Nassim
+"""
+
+
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
@@ -5,19 +10,14 @@ import h5py
 import scipy
 from PIL import Image
 from scipy import ndimage
-#from lr_utils import load_dataset
-#from public_tests import *
 
-
-
-#%matplotlib inline
-#%load_ext autoreload
-#%autoreload 2
-
+"""
+    To use your own image and see the output of your model, add it to the "/image folder, name it img.jpg and run the code"
+"""
 
 """
     training set : 209 cat and non cat pic
-    testing set : 
+    testing set : 50 cat and non cat pic
 """
 
 def load_dataset():
@@ -37,6 +37,7 @@ def load_dataset():
 
 
 train_set_x_orig, train_set_y, test_set_x_orig, test_set_y, classes = load_dataset()
+
 
 # Run this code to consult the training set (0 <= index <= 208)
 """
@@ -92,7 +93,7 @@ def propagate(w, b, X, Y):
 #                   b = b − 𝛼*𝑑b
 #where 𝛼 (alpha) is the learning rate
 
-def optimize(w, b, X, Y, num_iterations=100, learning_rate=0.009, print_cost=False):
+def optimize(w, b, X, Y, num_iterations, learning_rate, print_cost):
     
     w = copy.deepcopy(w)
     b = copy.deepcopy(b)
@@ -115,12 +116,7 @@ def optimize(w, b, X, Y, num_iterations=100, learning_rate=0.009, print_cost=Fal
             if print_cost:
                 print ("Cost after iteration %i: %f" %(i, cost))
     
-    params = {"w": w,
-              "b": b}
-    
-    grads = {"dw": dw, "db": db}
-    
-    return params, grads, costs
+    return {"w": w, "b": b}, {"dw": dw, "db": db}, costs
 
 #with the optimization done, we can now use w and b with a 70% degree of certainty with the predict function
 #predict Calculates  𝐴 = 𝜎(𝑤𝑇𝑋 + 𝑏), where 𝜎 is the sigmoid function
@@ -145,4 +141,56 @@ def predict(w, b, X):
     return Y_prediction
 
 
+def model(X_train, Y_train, X_test, Y_test, num_iterations, learning_rate, print_cost):
+    
+    w, b = initialize_with_zeros(X_train.shape[0])
+    
+    params, grads, costs = optimize(w, b, X_train, Y_train, num_iterations, learning_rate, print_cost)
+    w = params['w']
+    b = params['b']
+    
+    Y_prediction_test = predict(w, b, X_test)
+    Y_prediction_train = predict(w, b, X_train)
+    
 
+    # Print train/test Errors
+    if print_cost:
+        print("train accuracy: {} %".format(100 - np.mean(np.abs(Y_prediction_train - Y_train)) * 100))
+        print("test accuracy: {} %".format(100 - np.mean(np.abs(Y_prediction_test - Y_test)) * 100))
+
+    
+    d = {"costs": costs,
+         "Y_prediction_test": Y_prediction_test, 
+         "Y_prediction_train" : Y_prediction_train, 
+         "w" : w, 
+         "b" : b,
+         "learning_rate" : learning_rate,
+         "num_iterations": num_iterations}
+    
+    return d
+
+#num_iterations and print_cost == 10000 and True respectively , but you can change them 
+logistic_regression_model = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations=10000, learning_rate=0.005, print_cost=True)
+
+"""
+    Uncomment to take a look at the testing set results 
+"""
+#index = 8
+#plt.imshow(test_set_x[:, index].reshape((64, 64, 3)))
+#print ("y = " + str(test_set_y[0,index]) + ", you predicted that it is a \"" + classes[int(logistic_regression_model['Y_prediction_test'][0,index])].decode("utf-8") +  "\" picture.")
+
+
+#Your image is here...
+my_image = "img.jpg"   
+
+#Preprocessing the image to fit the algorithm.
+fname = "image/" + my_image
+image = np.array(Image.open(fname).resize((64, 64)))
+plt.imshow(image)
+image = image / 255.
+image = image.reshape((1, 64 * 64 * 3)).T
+
+
+my_predicted_image = predict(logistic_regression_model["w"], logistic_regression_model["b"], image)
+
+print("y = " + str(np.squeeze(my_predicted_image)) + ", your algorithm predicts a \"" + classes[int(np.squeeze(my_predicted_image)),].decode("utf-8") +  "\" picture.")
