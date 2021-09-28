@@ -1,1 +1,1 @@
-put you're image here
+put your image here
